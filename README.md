@@ -1,5 +1,7 @@
 # ProxyNow
 
+_This project is currently unfinished._
+
 ProxyNow is an easy-to-use tool to launch and share proxies in just a couple of clicks. These proxies can help people in difficult situations currently facing internet censorship. We also host a platform to find live proxies that can be used.
 
 See more at [proxynow.org](https://proxynow.org).

@@ -7,9 +7,9 @@ After=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/home/ec2-user/whatsapp-proxy/proxy/ops
-ExecStart=/bin/bash /home/ec2-user/whatsapp-proxy/proxy/ops/execstart.sh
-ExecStop=/bin/bash /home/ec2-user/whatsapp-proxy/proxy/ops/execstop.sh
+WorkingDirectory=/home/ec2-user/ProxyNow/whatsapp-proxy/proxy/ops
+ExecStart=/bin/bash /home/ec2-user/ProxyNow/whatsapp-proxy/proxy/ops/execstart.sh
+ExecStop=/bin/bash /home/ec2-user/ProxyNow/whatsapp-proxy/proxy/ops/execstop.sh
 
 [Install]
 WantedBy=multi-user.target

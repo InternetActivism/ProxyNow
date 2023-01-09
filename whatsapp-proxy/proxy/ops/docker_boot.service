@@ -1,19 +1,15 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-#
-# License found in the LICENSE file in the root directory
-# of this source tree.
-
-## Systemd definition for an example service to startup the proxy container on host reboot
+## Systemd definition for a service to startup the proxy container on host reboot
 
 [Unit]
-description=docker boot
+Description=docker boot
 After=docker.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/root/wa
-ExecStart=docker compose -f /root/whatsapp_proxy/docker-compose.yml up -d
+WorkingDirectory=/home/ec2-user/proxy/proxy/ops
+ExecStart=/bin/bash /home/ec2-user/proxy/proxy/ops/execstart.sh
+ExecStop=/bin/bash /home/ec2-user/proxy/proxy/ops/execstop.sh
 
 [Install]
 WantedBy=multi-user.target

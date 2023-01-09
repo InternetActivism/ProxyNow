@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit when any command fails
+set -e
+
 # Shared functions
 pretty_print() {
   printf "\n%b\n" "$1"
@@ -78,17 +81,24 @@ docker run -d --name socks5 -p 1080:1080 serjs/go-socks5-proxy
 # Get the local IP address
 pretty_print "Getting proxy address.."
 local_ip=$(ifconfig | grep "inet " | grep -v "127.0.0.1" | awk '{print $2}')
+external_ip=$(curl ipecho.net/plain ; echo)
 
 pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
 pretty_print "Then, input your proxy address: "
-pretty_print $local_ip
+pretty_print $external_ip
 pretty_print "========================================"
 pretty_print "In Telegram, navigate to Settings > Data and Storage > Proxy > Add Proxy"
 pretty_print "Then, input your proxy address and your port: "
-pretty_print $local_ip
+pretty_print $external_ip
 pretty_print "1080"
 
-#brew install miniupnpc
-#upnpc -a $local_ip 443 443 TCP # Use upnpc to map a port with the local IP
+pretty_print "Mapping ports..."
 
-#echo "Port 443 has been successfully mapped to $local_ip using upnpc."
+brew install miniupnpc
+
+if upnpc -a $local_ip 443 443 TCP; then # Use upnpc to map a port with the local IP ; then
+    echo "Port 443 has been successfully mapped to $local_ip"
+else
+    echo "Unfortunately, your network is not able to set up this proxy. Thank you for trying!"
+    exit 1
+fi

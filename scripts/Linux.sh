@@ -1,6 +1,10 @@
 #The convenience script to install ubuntu easily: 
 #https://docs.docker.com/engine/install/ubuntu/
 
+#update apt and install git if not already installed
+sudo apt update
+sudo apt-get install git-all
+
 #install docker on ubuntu
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
@@ -13,7 +17,7 @@ sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-c
 sudo chmod +x /usr/bin/docker-compose
 
 git clone https://github.com/WhatsApp/proxy.git
-sudo Docker build proxy/proxy -t whatsapp_proxy:1.0
+sudo docker build proxy/proxy -t whatsapp_proxy:1.0
 sudo docker run -it -p 80:80 -p 443:443 -p 5222:5222 -p 8080:8080 -p 8443:8443 -p 8222:8222 -p 8199:8199 whatsapp_proxy:1.0
 
 #If you want to use docker compose, follow the readme at https://github.com/WhatsApp/proxy/

@@ -150,7 +150,7 @@ brew install miniupnpc
 if upnpc -a $local_ip 443 443 TCP && upnpc -a $local_ip 1080 1080 TCP; then
     pretty_print "Ports 443 and 1080 have been successfully mapped to $local_ip"
 else
-    pretty_print "Unable to automatically map ports 443 and 1080. Please try manually port forwarding through your router's settings. For more information see the troubleshooting steps at the bottom of the setup page on ProxyNow."
+    pretty_print "Unable to automatically map ports 443 and 1080. Please try manually port forwarding to $local_ip through your router's settings. For more information see the troubleshooting steps at the bottom of the setup page on ProxyNow."
 fi
 
 pretty_print "Your proxy is now running, thank you for setting one up. If you wish to share it publicly, please register $external_ip on ProxyNow."

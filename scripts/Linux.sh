@@ -50,7 +50,7 @@ fi
 pretty_print "Updating apt and git if necesary..."
 
 sudo apt update
-sudo apt-get install git-all
+sudo apt-get -y install git-all
 
 if [ -x "$(command -v docker)" ]; then
    pretty_print "Checking for Docker updates..."
@@ -58,7 +58,7 @@ else
    pretty_print "Installing Docker..."
 
    # Setup Docker repository
-   sudo apt-get install \
+   sudo apt-get -y install \
     ca-certificates \
     curl \
     gnupg \
@@ -71,7 +71,8 @@ else
 fi
 
 # Install Docker / check for updates
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo apt-get update
+sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 pretty_print "Installing Docker Compose... "
 # Download the pkg
@@ -90,7 +91,7 @@ fi
 
 pretty_print "Mapping ports..."
 
-apt-get install miniupnpc
+apt-get -y install miniupnpc
 
 local_ip=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')
 external_ip=$(curl ipecho.net/plain ; echo)

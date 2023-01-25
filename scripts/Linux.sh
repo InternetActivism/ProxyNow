@@ -83,11 +83,23 @@ sudo chmod +x /usr/bin/docker-compose
 pretty_print "Building and running Docker container... "
 service docker start
 
-output=$(lsof -i :80 -i :443 -i :5222 -i :8080 -i :8443 -i :8222 -i :8199 | grep -v "COMMAND" | awk '{ print $1 }')
-if [[ -n "$output" ]] ; then
-   pretty_print "ERROR: Some ports required for proxy are in use, please end processes running on ports 80, 443, 5222, 8080, 8443, 8222 or 8199 and try again"
-   exit 1
-fi
+PORTS="80 443 5222 8080 8443 8222 8199"
+for p in $PORTS
+do
+   output=$(lsof -i :$p | grep -v "COMMAND" | awk '{ print $1 }')
+   if [[ -n "$output" ]] ; then
+      pretty_print "ERROR: Process running on port $p"
+      while true; do
+         pretty_print "Would you like to close the process? (y/n)"
+         read yn
+         case $yn in
+            [Yy]* ) kill $(lsof -t -i:$p); break;;
+            [Nn]* ) exit;;
+           * ) echo "Please respond with y or n";;
+         esac
+      done
+   fi
+done
 
 pretty_print "Mapping ports..."
 

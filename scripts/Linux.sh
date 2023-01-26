@@ -83,7 +83,7 @@ sudo chmod +x /usr/bin/docker-compose
 pretty_print "Building and running Docker container... "
 service docker start
 
-PORTS="80 443 5222 8080 8443 8222 8199"
+PORTS="80 443 5222 8080 8443 8222 8199 1080"
 for p in $PORTS
 do
    output=$(lsof -i :$p | grep -v "COMMAND" | awk '{ print $1 }')
@@ -115,17 +115,50 @@ else
     pretty_print "WARNING: Unable to automatically map port 443. Please try manually port forwarding to $local_ip through your router's settings. For more information see the troubleshooting steps at the bottom of the setup page on ProxyNow."
 fi
 
-docker-compose -f ../whatsapp-proxy/proxy/ops/docker-compose.yml up -d
+while true; do
+    pretty_print "Would you like to start the WhatsApp proxy? (y/n)"
+    read whatsapp_yn
+    case $whatsapp_yn in
+        [Yy]* )
+                docker-compose -f ../whatsapp-proxy/proxy/ops/docker-compose.yml up -d
+                pretty_print "WhatsApp proxy is now running!"
+                pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
+                pretty_print "Then, input your proxy address: $external_ip"
+                break;;
+        [Nn]* ) break;;
+            * ) echo "Please respond with y or n";;
+    esac
+done
 
-pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
-pretty_print "Then, input your proxy address: $external_ip"
+while true; do
+    pretty_print "Would you like to start the Telegram proxy? (y/n)"
+    read telegram_yn
+    case $telegram_yn in
+        [Yy]* )
+                if [ "$( docker container inspect -f '{{.State.Running}}' socks5 )" == "true" ]; then
+                  pretty_print "Telegram proxy already running"
+                else
+                  if [ "$(docker ps -aq -f status=exited -f name=socks5)" ]; then
+                    docker rm /socks5
+                  fi
+                  pretty_print "Running the proxy for Telegram.."
+                  docker run -d --name socks5 -p 1080:1080 serjs/go-socks5-proxy
+                fi
+                pretty_print "In Telegram, navigate to Settings > Data and Storage > Proxy > Add Proxy"
+                pretty_print "Then, input your proxy address and your port: "
+                pretty_print "    Proxy Address: $external_ip"
+                pretty_print "    Port: 1080"
+                break;;
+        [Nn]* ) break;;
+            * ) echo "Please respond with y or n";;
+    esac
+done
 
-pretty_print "Your proxy is now running, thank you for setting one up. If you wish to share it publicly, please register $external_ip on ProxyNow."
-
-pretty_print "Hit Control+C to stop the proxy"
+pretty_print "Hit Control+C to stop the proxies"
 
 ( trap exit SIGINT ; read -r -d '' _ </dev/tty ) ## wait for Ctrl-C
 
 pretty_print "Shutting down proxy... "
 
 docker-compose -f ${parent_dir}/whatsapp-proxy/proxy/ops/docker-compose.yml stop
+docker stop /socks5

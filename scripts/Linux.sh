@@ -29,12 +29,47 @@ mkdir -p "${log_dir}"
 # Send stderr and stdout to the log file. Create 3 so we can still print to console manually
 exec 3>&1 1>>"${log_file}" 2>&1
 
+# Get IPs
+local_ip=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')
+external_ip=$(curl ipecho.net/plain ; echo)
+
+# Unix time to share proxy with ProxyNow
+currentUnixTime=$(date +%s)
+
 # Shared functions
 pretty_print() {
   printf "\n%b\n" "$1" 1>&3
   printf "\n%b\n" "$1" >> "${log_file}"
   # printf "\n%b\n" "$1"
 }
+
+share_prompt() {
+	while true; do
+		pretty_print "Would you like to share your proxy with ProxyNow to securely distribute it to those in need? (y/n)"
+		read share_yn
+
+		case $share_yn in
+			[Yy]* ) pretty_print "Sharing with ProxyNow..."
+				curl -f  --location  --request POST 'https://proxynow-c699d-default-rtdb.firebaseio.com/proxynow-script/.json' \
+				--header 'Content-Type: application/json' \
+				-d '{
+	    				"ip": "'"$external_ip"'",
+	    				"port": "'"$1"'",
+	    				"protocol": "https",
+	    				"platform": "'"$2"'",
+	    				"createdTime": "'"$currentUnixTime"'"
+				   }' &&
+				pretty_print "Shared with ProxyNow." ||
+				pretty_print "Something went wrong. Could not share with ProxyNow."
+				break;;
+			[Nn]* ) pretty_print "Not sharing with ProxyNow..."
+				break;;
+	    		    * ) pretty_print "Please respond with y or n";;
+		esac
+	done
+
+}
+
 
 #######################
 #   Script Commands   #
@@ -47,10 +82,11 @@ if [ "$( docker container inspect -f '{{.State.Running}}' whatsapp_proxy )" == "
    docker-compose -f ${parent_dir}/whatsapp-proxy/proxy/ops/docker-compose.yml stop
 fi
 
-pretty_print "Updating apt and git if necesary..."
+pretty_print "Updating apt, git and curl if necesary..."
 
 sudo apt update
 sudo apt-get -y install git-all
+sudo apt -y install curl
 
 if [ -x "$(command -v docker)" ]; then
    pretty_print "Checking for Docker updates..."
@@ -95,7 +131,7 @@ do
          case $yn in
             [Yy]* ) kill $(lsof -t -i:$p); break;;
             [Nn]* ) exit;;
-           * ) echo "Please respond with y or n";;
+                * ) pretty_print "Please respond with y or n";;
          esac
       done
    fi
@@ -104,9 +140,6 @@ done
 pretty_print "Mapping ports..."
 
 apt-get -y install miniupnpc
-
-local_ip=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')
-external_ip=$(curl ipecho.net/plain ; echo)
 
 # Use upnpc to map a port with the local IP
 if upnpc -a $local_ip 443 443 TCP; then
@@ -124,9 +157,10 @@ while true; do
                 pretty_print "WhatsApp proxy is now running!"
                 pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
                 pretty_print "Then, input your proxy address: $external_ip"
+		share_prompt "443" "whatsapp"
                 break;;
         [Nn]* ) break;;
-            * ) echo "Please respond with y or n";;
+            * ) pretty_print "Please respond with y or n";;
     esac
 done
 
@@ -148,37 +182,12 @@ while true; do
                 pretty_print "Then, input your proxy address and your port: "
                 pretty_print "    Proxy Address: $external_ip"
                 pretty_print "    Port: 1080"
+		share_prompt "1080" "telegram"
                 break;;
         [Nn]* ) break;;
             * ) echo "Please respond with y or n";;
     esac
 done
-
-
-# Share proxy with ProxyNow
-currentUnixTime=$(date +%s)
-while true; do
-# Check cURL command if available (required), abort if does not exists
-type curl >/dev/null 2>&1 || { echo >&2 "Required curl but it's not installed. Not sending to ProxyNow."; break; }
-
-read -p "Would you like to share your proxy with ProxyNow to securely distribute it to those in need?(y/n) " yn
-
-case $yn in 
-	[nN] ) echo not sharing with ProxyNow...;
-		break;;
-    * ) echo sharing with ProxyNow...;
-        curl -f  --location  --request POST 'https://proxynow-c699d-default-rtdb.firebaseio.com/proxynow-script/.json' \
---header 'Content-Type: application/json' \
--d '{ 
-    "ip": "'"$external_ip"'",
-    "port": "83",
-    "protocol": "https",
-    "platform": "whatsapp",
-    "createdTime": "'"$currentUnixTime"'"
-}' && echo "\nShared with ProxyNow." ||
-    echo "\nSomething went wrong. Could not share with ProxyNow.";
-		break;;
-esac
 
 pretty_print "Hit Control+C to stop the proxies"
 

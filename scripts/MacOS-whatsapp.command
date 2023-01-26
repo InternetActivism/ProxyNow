@@ -153,4 +153,32 @@ else
     pretty_print "Unable to automatically map ports 443 and 1080. Please try manually port forwarding to $local_ip through your router's settings. For more information see the troubleshooting steps at the bottom of the setup page on ProxyNow."
 fi
 
+
+# Share proxy with ProxyNow
+currentUnixTime=$(date +%s)
+while true; do
+# Check cURL command if available (required), abort if does not exists
+type curl >/dev/null 2>&1 || { echo >&2 "Required curl but it's not installed. Not sending to ProxyNow."; break; }
+
+read -p "Would you like to share your proxy with ProxyNow to securely distribute it to those in need?(y/n) " yn
+
+case $yn in 
+	[nN] ) echo not sharing with ProxyNow...;
+		break;;
+    * ) echo sharing with ProxyNow...;
+        curl -f  --location  --request POST 'https://proxynow-c699d-default-rtdb.firebaseio.com/proxynow-script/.json' \
+--header 'Content-Type: application/json' \
+-d '{ 
+    "ip": "'"$external_ip"'",
+    "port": "83",
+    "protocol": "https",
+    "platform": "whatsapp",
+    "createdTime": "'"$currentUnixTime"'"
+}' && echo "\nShared with ProxyNow." ||
+    echo "\nSomething went wrong. Could not share with ProxyNow.";
+		break;;
+esac
+
+done
+
 pretty_print "Your proxy is now running, thank you for setting one up. If you wish to share it publicly, please register $external_ip on ProxyNow."

@@ -1,4 +1,5 @@
 ### Run Command Prompt as Admin ###
+### This script is experimental and may not work for all devices ###
 
 # Only necessary if WSL isn't already installed, can check with `wsl --status`
 dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart

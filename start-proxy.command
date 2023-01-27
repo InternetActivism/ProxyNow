@@ -11,7 +11,7 @@ dir="$(dirname "$0")"
 parent_dir="$(dirname "$dir")"
 
 # Log directory
-log_dir="${parent_dir}/logs"
+log_dir="${dir}/_data/logs"
 
 # The current time (used for log file name)
 now=$(date +"%Y-%m-%d-%H-%M-%S")
@@ -120,7 +120,7 @@ if ! docker info >/dev/null 2>&1; then
   open -a Docker
 fi
 
-cd ../whatsapp-proxy/proxy
+cd _data/proxy
 
 n=0
 until [ "$n" -ge 5 ]

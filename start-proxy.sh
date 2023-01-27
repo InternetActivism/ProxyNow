@@ -4,11 +4,8 @@
 #   Constants   #
 #################
 
-# Get the parent directory
-parent_dir="$(cd ../ && pwd)"
-
 # Log directory
-log_dir="${parent_dir}/logs"
+log_dir="data_/logs"
 
 # The current time (used for log file name)
 now=$(date +"%Y-%m-%d-%H-%M-%S")
@@ -79,7 +76,7 @@ pretty_print "Here we go..."
 
 if [ "$( docker container inspect -f '{{.State.Running}}' whatsapp_proxy )" == "true" ]; then
    pretty_print "WhatsApp proxy already running, shutting down old instance"
-   docker-compose -f ${parent_dir}/whatsapp-proxy/proxy/ops/docker-compose.yml stop
+   docker-compose -f data_/proxy/ops/docker-compose.yml stop
 fi
 
 pretty_print "Updating apt, git and curl if necesary..."
@@ -153,7 +150,7 @@ while true; do
     read whatsapp_yn
     case $whatsapp_yn in
         [Yy]* )
-                docker-compose -f ../whatsapp-proxy/proxy/ops/docker-compose.yml up -d
+                docker-compose -f data_/proxy/ops/docker-compose.yml up -d
                 pretty_print "WhatsApp proxy is now running!"
                 pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
                 pretty_print "Then, input your proxy address: $external_ip"
@@ -195,5 +192,5 @@ pretty_print "Hit Control+C to stop the proxies"
 
 pretty_print "Shutting down proxy... "
 
-docker-compose -f ${parent_dir}/whatsapp-proxy/proxy/ops/docker-compose.yml stop
+docker-compose -f data_/proxy/ops/docker-compose.yml stop
 docker stop /socks5

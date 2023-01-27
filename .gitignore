@@ -1,2 +1,3 @@
 tmp/
 helm/whatsapp-proxy-chart*.tgz
+.DS_Store

@@ -1,26 +1,20 @@
 # ProxyNow
 
-_This project is currently unfinished._
-
-ProxyNow is an easy-to-use tool to launch and share proxies in just a couple of clicks. These proxies can help people in difficult situations currently facing internet censorship. We also host a platform to find live proxies that can be used.
+ProxyNow is an easy-to-use tool to launch and share proxies in just a couple of clicks. These proxies can help people in difficult situations currently facing internet censorship.
 
 See more at [proxynow.org](https://proxynow.org).
 
-# Setting up a WhatsApp Chat Proxy
+### Setting up a WhatsApp and Telegram Chat Proxy
 
-If you are unable to connect directly to WhatsApp, a proxy can be used as a gateway between you and our servers. To help yourself or others re-establish connection to WhatsApp, you can set up a proxy server.
+To help yourself or others re-establish connection to WhatsApp, you can set up a proxy server. You can easily set one up by following the steps for your platform on our site [here](https://proxynow.org/setup).
 
-If you already have a proxy to use, you can connect it to WhatsApp by following the steps in this [article](https://faq.whatsapp.com/520504143274092).
+### Using a Proxy on WhatsApp or Telegram
 
-TODO
+If you are unable to connect directly to WhatsApp or Telegram, a proxy can be used as a gateway between you and an alternate server. [Click here](https://proxynow.org/use) to find more information about how to connect to a proxy on your device.
 
-# Setting up a Signal Chat Proxy
+### Sharing Your Proxy
 
-TODO
-
-# Setting up a Telegram Chat Proxy
-
-TODO
+Once you have set up a proxy, you can share it with us to allow Iranians to bypass internet censorship and communicate with their loved ones. We will be working with our partner organizations to securely distribute the list of proxies to those who need it most.
 
 # Credits
 ------------

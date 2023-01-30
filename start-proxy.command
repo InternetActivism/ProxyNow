@@ -123,7 +123,7 @@ fi
 cd _data/proxy
 
 n=0
-until [ "$n" -ge 5 ]
+until [ "$n" -ge 10 ]
 do
   if ! docker info >/dev/null 2>&1; then
     pretty_print "Docker does not seem to be running, retrying in 5 seconds"
@@ -134,7 +134,7 @@ do
   sleep 5
 done
 
-if [ "$n" -ge 5 ]; then
+if [ "$n" -ge 10 ]; then
   pretty_print "Unable to start Docker, please try opening Docker manually and try again."
   exit 1
 fi

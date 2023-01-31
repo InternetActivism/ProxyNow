@@ -11,7 +11,7 @@ dir="$(dirname "$0")"
 parent_dir="$(dirname "$dir")"
 
 # Log directory
-log_dir="${dir}/_data/logs"
+log_dir="${dir}/logs"
 
 # The current time (used for log file name)
 now=$(date +"%Y-%m-%d-%H-%M-%S")
@@ -46,7 +46,7 @@ currentUnixTime=$(date +%s)
 pretty_print() {
   printf "\n%b\n" "$1" 1>&3
   printf "\n%b\n" "$1" >> "${log_file}"
-  printf "\n%b\n" "$1"
+  # printf "\n%b\n" "$1"
 }
 
 share_prompt() {
@@ -120,8 +120,6 @@ if ! docker info >/dev/null 2>&1; then
   open -a Docker
 fi
 
-cd _data/proxy
-
 n=0
 until [ "$n" -ge 10 ]
 do
@@ -139,9 +137,6 @@ if [ "$n" -ge 10 ]; then
   exit 1
 fi
 
-pretty_print "Building the proxy host container.."
-docker build . -t proxynow:1.0
-
 while true; do
   pretty_print "Would you like to run the proxy for WhatsApp? (y/n)"
   read whatsapp_yn
@@ -153,7 +148,8 @@ while true; do
                 docker rm /whatsapp-proxy
               fi 
               pretty_print "Running the proxy for WhatsApp.."
-              docker run -d --name whatsapp-proxy -p 80:80 -p 443:443 -p 5222:5222 -p 8080:8080 -p 8443:8443 -p 8222:8222 -p 8199:8199 proxynow:1.0
+              docker pull facebook/whatsapp_proxy:latest
+              docker run -d --name whatsapp-proxy -p 80:80 -p 443:443 -p 5222:5222 -p 8080:8080 -p 8443:8443 -p 8222:8222 -p 8199:8199 facebook/whatsapp_proxy:latest
             fi 
             pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
             pretty_print "Then, input your proxy address: $external_ip"

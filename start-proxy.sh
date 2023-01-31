@@ -5,7 +5,7 @@
 #################
 
 # Log directory
-log_dir="_data/logs"
+log_dir="logs"
 
 # The current time (used for log file name)
 now=$(date +"%Y-%m-%d-%H-%M-%S")
@@ -74,11 +74,6 @@ share_prompt() {
 
 pretty_print "Here we go..."
 
-if [ "$( docker container inspect -f '{{.State.Running}}' whatsapp_proxy )" == "true" ]; then
-   pretty_print "WhatsApp proxy already running, shutting down old instance"
-   docker-compose -f _data/proxy/ops/docker-compose.yml stop
-fi
-
 pretty_print "Updating apt, git and curl if necesary..."
 
 sudo apt update
@@ -146,20 +141,27 @@ else
 fi
 
 while true; do
-    pretty_print "Would you like to start the WhatsApp proxy? (y/n)"
-    read whatsapp_yn
-    case $whatsapp_yn in
-        [Yy]* )
-                docker-compose -f _data/proxy/ops/docker-compose.yml up -d
-                pretty_print "WhatsApp proxy is now running!"
-                pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
-                pretty_print "Then, input your proxy address: $external_ip"
-		share_prompt "443" "whatsapp"
-                break;;
-        [Nn]* ) break;;
-            * ) pretty_print "Please respond with y or n";;
-    esac
-done
+  pretty_print "Would you like to run the proxy for WhatsApp? (y/n)"
+  read whatsapp_yn
+  case $whatsapp_yn in
+    [Yy]* ) if [ "$( docker container inspect -f '{{.State.Running}}' whatsapp-proxy )" == "true" ]; then
+              pretty_print "WhatsApp proxy already running"
+            else
+              if [ "$(docker ps -aq -f status=exited -f name=whatsapp-proxy)" ]; then
+                docker rm /whatsapp-proxy
+              fi 
+              pretty_print "Running the proxy for WhatsApp.."
+              docker pull facebook/whatsapp_proxy:latest
+              docker run -d --name whatsapp-proxy -p 80:80 -p 443:443 -p 5222:5222 -p 8080:8080 -p 8443:8443 -p 8222:8222 -p 8199:8199 facebook/whatsapp_proxy:latest
+            fi 
+            pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
+            pretty_print "Then, input your proxy address: $external_ip"
+            share_prompt "443" "whatsapp"
+            break;;
+    [Nn]* ) break;;
+        * ) pretty_print "Please respond with y or n";;
+  esac
+done 
 
 while true; do
     pretty_print "Would you like to start the Telegram proxy? (y/n)"
@@ -192,5 +194,5 @@ pretty_print "Hit Control+C to stop the proxies"
 
 pretty_print "Shutting down proxy... "
 
-docker-compose -f _data/proxy/ops/docker-compose.yml stop
+docker stop /whatsapp-proxy
 docker stop /socks5

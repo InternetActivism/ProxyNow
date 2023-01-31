@@ -150,10 +150,10 @@ pretty_print "Mapping ports..."
 apt-get -y install miniupnpc
 
 # Use upnpc to map a port with the local IP
-if upnpc -a $local_ip 443 443 TCP; then
-    pretty_print "Port 443 has been successfully mapped to $local_ip"
+if upnpc -a $local_ip 443 443 TCP && upnpc -a $local_ip 1080 1080 TCP; then
+    pretty_print "Ports 443 and 1080 have been successfully mapped to $local_ip"
 else
-    pretty_print "WARNING: Unable to automatically map port 443. Please try manually port forwarding to $local_ip through your router's settings. For more information see the troubleshooting steps at the bottom of the setup page on ProxyNow."
+    pretty_print "Unable to automatically map ports 443 and 1080 which means your proxy may not work. Double check that you are not on a public network and please try manually port forwarding by going to $router_ip and selecting the device with the IP address $local_ip then forward ports 443 and 1080. For more information see the troubleshooting steps at the bottom of the setup page on ProxyNow."
 fi
 
 # Setup proxy for WhatsApp
@@ -180,10 +180,10 @@ else
   pretty_print "Running the proxy for Telegram.."
   docker run -d --name socks5 -p 1080:1080 serjs/go-socks5-proxy
 fi
-pretty_print "In Telegram, navigate to Settings > Data and Storage > Proxy > Add Proxy"
-pretty_print "Then, input your proxy address and your port: "
-pretty_print "    Proxy Address: $external_ip"
-pretty_print "    Port: 1080"
+pretty_print "In Telegram, navigate to Settings > Data and Storage > Proxy > Add Proxy
+Select SOCKS5 then input your proxy address and your port: 
+    Proxy Address: $external_ip
+    Port: 1080"
 
 share_prompt
 

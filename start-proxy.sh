@@ -41,38 +41,54 @@ pretty_print() {
 }
 
 share_prompt() {
-	while true; do
-		pretty_print "Would you like to share your proxy with ProxyNow to securely distribute it to those in need? (y/n)"
-		read share_yn
+ 	while true; do
+ 		pretty_print "Would you like to share your proxies with ProxyNow to securely distribute it to those in need? (y/n)"
+ 		read share_yn
 
-		case $share_yn in
-			[Yy]* ) pretty_print "Sharing with ProxyNow..."
-				curl -f  --location  --request POST 'https://proxynow-c699d-default-rtdb.firebaseio.com/proxynow-script/.json' \
-				--header 'Content-Type: application/json' \
-				-d '{
-	    				"ip": "'"$external_ip"'",
-	    				"port": "'"$1"'",
-	    				"protocol": "https",
-	    				"platform": "'"$2"'",
-	    				"createdTime": "'"$currentUnixTime"'"
-				   }' &&
-				pretty_print "Shared with ProxyNow." ||
-				pretty_print "Something went wrong. Could not share with ProxyNow."
-				break;;
-			[Nn]* ) pretty_print "Not sharing with ProxyNow..."
-				break;;
-	    		    * ) pretty_print "Please respond with y or n";;
-		esac
-	done
+ 		case $share_yn in
+ 			[Yy]* ) pretty_print "Sharing with ProxyNow..."
+ 				   curl -f  --location  --request POST 'https://proxynow-c699d-default-rtdb.firebaseio.com/proxynow-script/.json' \
+ 				   --header 'Content-Type: application/json' \
+ 				   -d '{
+ 	    				"ip": "'"$external_ip"'",
+ 	    				"port": "443",
+ 	    				"protocol": "https",
+ 	    				"platform": "whatsapp",
+ 	    				"createdTime": "'"$currentUnixTime"'"
+ 				   }' &&
+           curl -f  --location  --request POST 'https://proxynow-c699d-default-rtdb.firebaseio.com/proxynow-script/.json' \
+ 				   --header 'Content-Type: application/json' \
+ 				   -d '{
+ 	    				"ip": "'"$external_ip"'",
+ 	    				"port": "1080",
+ 	    				"protocol": "https",
+ 	    				"platform": "telegram",
+ 	    				"createdTime": "'"$currentUnixTime"'"
+ 				   }' &&
+ 				   pretty_print "Shared with ProxyNow." ||
+ 				   pretty_print "Something went wrong. Could not share with ProxyNow."
+ 				   break;;
+ 			[Nn]* ) pretty_print "Not sharing with ProxyNow..."
+ 				   break;;
+ 	    		    * ) pretty_print "Please respond with y or n";;
+ 		esac
+ 	done
 
-}
+ }
 
 
 #######################
 #   Script Commands   #
 #######################
 
-pretty_print "Here we go..."
+pretty_print "Hey! Welcome to ProxyNow! This script will automatically take you through setting up a Proxy to help people in Iran access the internet.
+
+Before we begin, this script will install some software that handles proxy infrastructure such as homebrew and docker. All of this software is secure and vetted by industry professionals. 
+
+You will also be asked if you want to share your proxy with ProxyNow. We recommend that you accept by entering "y" and pressing return when prompted so that we can securely distribute your proxy to those in need.
+
+You must keep this terminal on for your proxy to keep running, but you can stop this process at any time by pressing CTRL+C.
+"
 
 pretty_print "Updating apt, git and curl if necesary..."
 
@@ -140,53 +156,36 @@ else
     pretty_print "WARNING: Unable to automatically map port 443. Please try manually port forwarding to $local_ip through your router's settings. For more information see the troubleshooting steps at the bottom of the setup page on ProxyNow."
 fi
 
-while true; do
-  pretty_print "Would you like to run the proxy for WhatsApp? (y/n)"
-  read whatsapp_yn
-  case $whatsapp_yn in
-    [Yy]* ) if [ "$( docker container inspect -f '{{.State.Running}}' whatsapp-proxy )" == "true" ]; then
-              pretty_print "WhatsApp proxy already running"
-            else
-              if [ "$(docker ps -aq -f status=exited -f name=whatsapp-proxy)" ]; then
-                docker rm /whatsapp-proxy
-              fi 
-              pretty_print "Running the proxy for WhatsApp.."
-              docker pull facebook/whatsapp_proxy:latest
-              docker run -d --name whatsapp-proxy -p 80:80 -p 443:443 -p 5222:5222 -p 8080:8080 -p 8443:8443 -p 8222:8222 -p 8199:8199 facebook/whatsapp_proxy:latest
-            fi 
-            pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
-            pretty_print "Then, input your proxy address: $external_ip"
-            share_prompt "443" "whatsapp"
-            break;;
-    [Nn]* ) break;;
-        * ) pretty_print "Please respond with y or n";;
-  esac
-done 
+# Setup proxy for WhatsApp
+if [ "$( docker container inspect -f '{{.State.Running}}' whatsapp-proxy )" == "true" ]; then
+  pretty_print "WhatsApp proxy already running"
+else
+  if [ "$(docker ps -aq -f status=exited -f name=whatsapp-proxy)" ]; then
+    docker rm /whatsapp-proxy
+  fi 
+  pretty_print "Running the proxy for WhatsApp.."
+  docker pull facebook/whatsapp_proxy:latest
+  docker run -d --name whatsapp-proxy -p 80:80 -p 443:443 -p 5222:5222 -p 8080:8080 -p 8443:8443 -p 8222:8222 -p 8199:8199 facebook/whatsapp_proxy:latest
+fi 
+pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
+pretty_print "Then, input your proxy address: $external_ip"
 
-while true; do
-    pretty_print "Would you like to start the Telegram proxy? (y/n)"
-    read telegram_yn
-    case $telegram_yn in
-        [Yy]* )
-                if [ "$( docker container inspect -f '{{.State.Running}}' socks5 )" == "true" ]; then
-                  pretty_print "Telegram proxy already running"
-                else
-                  if [ "$(docker ps -aq -f status=exited -f name=socks5)" ]; then
-                    docker rm /socks5
-                  fi
-                  pretty_print "Running the proxy for Telegram.."
-                  docker run -d --name socks5 -p 1080:1080 serjs/go-socks5-proxy
-                fi
-                pretty_print "In Telegram, navigate to Settings > Data and Storage > Proxy > Add Proxy"
-                pretty_print "Then, input your proxy address and your port: "
-                pretty_print "    Proxy Address: $external_ip"
-                pretty_print "    Port: 1080"
-		share_prompt "1080" "telegram"
-                break;;
-        [Nn]* ) break;;
-            * ) echo "Please respond with y or n";;
-    esac
-done
+# Setup proxy for Telegram
+if [ "$( docker container inspect -f '{{.State.Running}}' socks5 )" == "true" ]; then
+  pretty_print "Telegram proxy already running"
+else
+  if [ "$(docker ps -aq -f status=exited -f name=socks5)" ]; then
+    docker rm /socks5
+  fi
+  pretty_print "Running the proxy for Telegram.."
+  docker run -d --name socks5 -p 1080:1080 serjs/go-socks5-proxy
+fi
+pretty_print "In Telegram, navigate to Settings > Data and Storage > Proxy > Add Proxy"
+pretty_print "Then, input your proxy address and your port: "
+pretty_print "    Proxy Address: $external_ip"
+pretty_print "    Port: 1080"
+
+share_prompt
 
 pretty_print "Hit Control+C to stop the proxies"
 

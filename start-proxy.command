@@ -38,6 +38,10 @@ exec 3>&1 1>>"${log_file}" 2>&1
 # Get IPs
 local_ip=$(ifconfig | awk '/inet /&&!/127.0.0.1/{print $2;exit}')
 external_ip=$(curl ipecho.net/plain ; echo)
+router_ip=$(netstat -nr | grep default | grep -v tun | awk '{print $2}')
+
+# Stop colima if running
+colima stop
 
 # Unix time to share proxy with ProxyNow
 currentUnixTime=$(date +%s)
@@ -141,8 +145,8 @@ else
   docker pull facebook/whatsapp_proxy:latest
   docker run -d --name whatsapp-proxy -p 80:80 -p 443:443 -p 5222:5222 -p 8080:8080 -p 8443:8443 -p 8222:8222 -p 8199:8199 facebook/whatsapp_proxy:latest
 fi 
-pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy"
-pretty_print "Then, input your proxy address: $external_ip"
+pretty_print "In WhatsApp, navigate to Settings > Storage and Data > Proxy
+Then, input your proxy address: $external_ip"
 
 
 # Setup proxy for Telegram
@@ -155,10 +159,10 @@ else
   pretty_print "Running the proxy for Telegram.."
   docker run -d --name socks5 -p 1080:1080 serjs/go-socks5-proxy
 fi 
-pretty_print "In Telegram, navigate to Settings > Data and Storage > Proxy > Add Proxy"
-pretty_print "Then, input your proxy address and your port: "
-pretty_print "    Proxy Address: $external_ip"
-pretty_print "    Port: 1080"
+pretty_print "In Telegram, navigate to Settings > Data and Storage > Proxy > Add Proxy
+Select SOCKS5 then input your proxy address and your port: 
+    Proxy Address: $external_ip
+    Port: 1080"
 
 pretty_print "Mapping ports..."
 
@@ -168,7 +172,7 @@ brew install miniupnpc
 if upnpc -a $local_ip 443 443 TCP && upnpc -a $local_ip 1080 1080 TCP; then
     pretty_print "Ports 443 and 1080 have been successfully mapped to $local_ip"
 else
-    pretty_print "Unable to automatically map ports 443 and 1080. Please try manually port forwarding to $local_ip through your router's settings. For more information see the troubleshooting steps at the bottom of the setup page on ProxyNow."
+    pretty_print "Unable to automatically map ports 443 and 1080 which means your proxy may not work. Double check that you are not on a public network and please try manually port forwarding by going to $router_ip and selecting the device with the IP address $local_ip then forward ports 443 and 1080. For more information see the troubleshooting steps at the bottom of the setup page on ProxyNow."
 fi
 
 share_prompt

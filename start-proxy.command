@@ -108,34 +108,11 @@ pretty_print "Installing GNU find, locate, updatedb and xargs..."
 printf 'export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"' >> ~/.zshrc
 export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
 
-if ! command -v docker &>/dev/null; then
-  pretty_print "Installing Docker..."
-  brew install docker
-else
-  pretty_print "You already have Docker installed... good job!"
-fi
-
-if ! docker info >/dev/null 2>&1; then
-  pretty_print "Opening Docker..."
-  open -a Docker
-fi
-
-n=0
-until [ "$n" -ge 10 ]
-do
-  if ! docker info >/dev/null 2>&1; then
-    pretty_print "Docker does not seem to be running, retrying in 5 seconds"
-  else
-    break
-  fi
-  n=$((n+1)) 
-  sleep 5
-done
-
-if [ "$n" -ge 10 ]; then
-  pretty_print "Unable to start Docker, please try opening Docker manually and try again."
-  exit 1
-fi
+pretty_print "Installing Docker... (this may take a few minutes)"
+	brew install docker
+	brew install docker-compose
+	brew install colima
+	colima start
 
 while true; do
   pretty_print "Would you like to run the proxy for WhatsApp? (y/n)"
@@ -203,3 +180,4 @@ pretty_print "Shutting down proxies... "
 
 docker stop /whatsapp-proxy
 docker stop /socks5
+colima stop
